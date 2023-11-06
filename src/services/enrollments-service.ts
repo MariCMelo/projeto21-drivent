@@ -50,6 +50,7 @@ type GetAddressResult = Omit<Address, 'createdAt' | 'updatedAt' | 'enrollmentId'
 async function createOrUpdateEnrollmentWithAddress(params: CreateOrUpdateEnrollmentWithAddress) {
   const enrollment = exclude(params, 'address');
   enrollment.birthday = new Date(enrollment.birthday);
+  
   const address = getAddressForUpsert(params.address);
 
   await getAddressFromCEP(address.cep);
