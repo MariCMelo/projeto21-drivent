@@ -26,7 +26,7 @@ export function handleApplicationErrors(
     });
   }
 
-  if (err.name === 'InvalidDataError') {
+  if (err.name === 'InvalidDataError' || err.name === 'InvalidCEPError') {
     return res.status(httpStatus.BAD_REQUEST).send({
       message: err.message,
     });
@@ -46,18 +46,6 @@ export function handleApplicationErrors(
 
   if (err.name === 'UnauthorizedError') {
     return res.status(httpStatus.UNAUTHORIZED).send({
-      message: err.message,
-    });
-  }
-
-  if (err.name === 'InvalidCepError') {
-    return res.status(httpStatus.BAD_REQUEST).send({
-      message: err.message,
-    });
-  }
-
-  if (err.name === 'EnrollmentAddressNotFoundError') {
-    return res.status(httpStatus.NOT_FOUND).send({
       message: err.message,
     });
   }

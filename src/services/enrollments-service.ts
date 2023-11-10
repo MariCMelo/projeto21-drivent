@@ -1,32 +1,34 @@
 import { Address, Enrollment } from '@prisma/client';
 import { request } from '@/utils/request';
-import { enrollmentAddressNotFoundError, invalidCepError } from '@/errors';
+import { notFoundError } from '@/errors';
 import { addressRepository, CreateAddressParams, enrollmentRepository, CreateEnrollmentParams } from '@/repositories';
 import { exclude } from '@/utils/prisma-utils';
-import { FormatedCep } from '@/protocols';
+import { invalidCepError } from '@/errors/invalid-cep-error';
+import { AddressEnrollment } from '@/protocols';
 
-async function getAddressFromCEP(cep: string) {
+async function getAddressFromCEP(cep: string): Promise<AddressEnrollment> {
   const result = await request.get(`${process.env.VIA_CEP_API}/${cep}/json/`);
-  const { logradouro, complemento, bairro, localidade, uf } = result.data;
 
   if (!result.data || result.data.erro) {
     throw invalidCepError();
   }
 
-  const address: FormatedCep = {
-    logradouro,
-    complemento,
+  const { bairro, localidade, uf, logradouro, complemento } = result.data;
+  const address: AddressEnrollment = {
     bairro,
-    cidade: localidade,
     uf,
+    complemento,
+    logradouro,
+    cidade: localidade,
   };
+
   return address;
 }
 
 async function getOneWithAddressByUserId(userId: number): Promise<GetOneWithAddressByUserIdResult> {
   const enrollmentWithAddress = await enrollmentRepository.findWithAddressByUserId(userId);
 
-  if (!enrollmentWithAddress) throw enrollmentAddressNotFoundError();
+  if (!enrollmentWithAddress) throw notFoundError();
 
   const [firstAddress] = enrollmentWithAddress.Address;
   const address = getFirstAddress(firstAddress);
@@ -47,10 +49,9 @@ function getFirstAddress(firstAddress: Address): GetAddressResult {
 
 type GetAddressResult = Omit<Address, 'createdAt' | 'updatedAt' | 'enrollmentId'>;
 
-async function createOrUpdateEnrollmentWithAddress(params: CreateOrUpdateEnrollmentWithAddress) {
+async function createOrUpdateEnrollmentWithAddress(params: CreateOrUpdateEnrollmentWithAddress): Promise<void> {
   const enrollment = exclude(params, 'address');
   enrollment.birthday = new Date(enrollment.birthday);
-  
   const address = getAddressForUpsert(params.address);
 
   await getAddressFromCEP(address.cep);
