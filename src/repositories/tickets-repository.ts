@@ -1,4 +1,5 @@
 import { prisma } from '@/config';
+import { newTicket } from '@/protocols';
 
 async function findWithTicketType() {
   const result = await prisma.ticketType.findMany();
@@ -6,16 +7,23 @@ async function findWithTicketType() {
 }
 
 async function findTicketsByEnrollmentId(enrollmentId: number) {
-    const result = await prisma.ticket.findUnique({
-        where: {enrollmentId},
-        include: {TicketType: true}
-    })
-    return result
+  const result = await prisma.ticket.findUnique({
+    where: { enrollmentId },
+    include: { TicketType: true },
+  });
+  return result;
 }
 
-
+async function createTicket(ticket: newTicket) {
+  const result = await prisma.ticket.create({
+    data: ticket,
+    include: { TicketType: true },
+  });
+  return result;
+}
 
 export const ticketsRepository = {
-    findWithTicketType,
-    findTicketsByEnrollmentId
-}
+  createTicket,
+  findWithTicketType,
+  findTicketsByEnrollmentId,
+};
