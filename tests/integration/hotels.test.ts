@@ -42,7 +42,7 @@ describe('GET /hotels', () => {
 it('should respond with status 404 when there are no hotels', async () => {
   const token = faker.lorem.word();
 
-  const response = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
+  const response = await sever.get('/hotels').set('Authorization', `Bearer ${token}`);
   expect(response.status).toEqual(httpStatus.NOT_FOUND);
 })
 
