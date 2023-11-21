@@ -1,20 +1,19 @@
-import { invalidDataError, notFoundError } from '@/errors';
-import { newTicket } from '@/protocols';
-import { enrollmentRepository } from '@/repositories';
-import { ticketsRepository } from '@/repositories/tickets-repository';
-import { TicketStatus } from '@prisma/client';
+import { notFoundError } from '@/errors';
+import { CreateTicketParams } from '@/protocols';
+import { enrollmentRepository, ticketsRepository } from '@/repositories';
 
-async function findWithTicketType() {
-  const result = await ticketsRepository.findWithTicketType();
-  return result;
+async function getTicketTypes() {
+  const ticketTypes = await ticketsRepository.findTicketTypes();
+  return ticketTypes;
 }
 
-async function findTicketsByUser(userId: number) {
+async function getTicketByUserId(userId: number) {
   const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
   if (!enrollment) throw notFoundError();
 
-  const ticket = await ticketsRepository.findTicketsByEnrollmentId(enrollment.id);
+  const ticket = await ticketsRepository.findTicketByEnrollmentId(enrollment.id);
   if (!ticket) throw notFoundError();
+
   return ticket;
 }
 
@@ -22,12 +21,10 @@ async function createTicket(userId: number, ticketTypeId: number) {
   const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
   if (!enrollment) throw notFoundError();
 
-  if (!ticketTypeId) throw invalidDataError('missing ticket type Id');
-
-  const ticketData: newTicket = {
-    enrollmentId: enrollment.id,
+  const ticketData: CreateTicketParams = {
     ticketTypeId,
-    status: TicketStatus.RESERVED,
+    enrollmentId: enrollment.id,
+    status: 'RESERVED',
   };
 
   const ticket = await ticketsRepository.createTicket(ticketData);
@@ -35,7 +32,7 @@ async function createTicket(userId: number, ticketTypeId: number) {
 }
 
 export const ticketsService = {
+  getTicketByUserId,
+  getTicketTypes,
   createTicket,
-  findWithTicketType,
-  findTicketsByUser,
 };
