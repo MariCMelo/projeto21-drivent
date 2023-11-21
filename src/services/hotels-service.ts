@@ -1,4 +1,4 @@
-import { notFoundError } from '@/errors';
+import { invalidDataError, notFoundError } from '@/errors';
 import { cannotGetHotelsError } from '@/errors/cannot-get-hotels-error';
 import { enrollmentRepository, ticketsRepository } from '@/repositories';
 import { hotelsRepository } from '@/repositories/hotels-repository';
@@ -6,7 +6,7 @@ import { TicketStatus } from '@prisma/client';
 
 async function validateBooking(userId: number) {
   const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
-  if (!enrollment) throw notFoundError();
+  if (!enrollment) throw notFoundError()
 
   const ticket = await ticketsRepository.findTicketByEnrollmentId(enrollment.id);
   if (!ticket) throw notFoundError();
@@ -29,6 +29,10 @@ async function getRoomsByHotelId(userId: number, hotelId: number) {
 
   const rooms = await hotelsRepository.findRoomsByHotelId(hotelId);
   if (!rooms) throw notFoundError();
+
+  if (!hotelId || isNaN(hotelId)) {
+    throw invalidDataError('hotelId');
+  }
 
   return rooms;
 }
