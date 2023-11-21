@@ -6,6 +6,15 @@ async function findHotels(): Promise<Hotel[]> {
   return result;
 }
 
+async function findRoomsByHotelId(hotelId: number) {
+  const result = await prisma.room.findMany({
+    where: { id: hotelId },
+    include: { Hotel: true },
+  });
+  return result;
+}
+
 export const hotelsRepository = {
   findHotels,
+  findRoomsByHotelId,
 };
