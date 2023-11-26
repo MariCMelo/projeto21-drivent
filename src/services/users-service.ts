@@ -4,7 +4,7 @@ import { eventsService } from '@/services';
 import { cannotEnrollBeforeStartDateError, duplicatedEmailError } from '@/errors';
 import { userRepository } from '@/repositories';
 
-export async function createUser({ email, password }: CreateUserParams){
+export async function createUser({ email, password }: CreateUserParams): Promise<User> {
   await canEnrollOrFail();
 
   await validateUniqueEmailOrFail(email);

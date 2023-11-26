@@ -50,20 +50,18 @@ export function handleApplicationErrors(
     });
   }
 
-  if (err.name === 'cannotGetHotelsError') {
-    return res.status(httpStatus.PAYMENT_REQUIRED).send({
-      message: err.message,
-    });
+  if (err.name === 'CannotListHotelsError') {
+    return res.status(httpStatus.PAYMENT_REQUIRED).send(err.message);
   }
-
+  if (err.name === 'CannotBookError') {
+    return res.status(httpStatus.FORBIDDEN).send(err.message);
+  }
+  
   if (err.hasOwnProperty('status') && err.name === 'RequestError') {
     return res.status((err as RequestError).status).send({
       message: err.message,
     });
   }
-
-
-  
 
   /* eslint-disable-next-line no-console */
   console.error(err);
