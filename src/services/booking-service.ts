@@ -1,6 +1,7 @@
 import { notFoundError } from '@/errors';
 import { cannotBookError } from '@/errors/cannot-book-error';
 import { bookingRepository, enrollmentRepository, ticketsRepository } from '@/repositories';
+import { roomRepository } from '@/repositories/room-repository';
 import { TicketStatus } from '@prisma/client';
 
 async function validateUserBooking(userId: number) {
@@ -17,15 +18,31 @@ async function validateUserBooking(userId: number) {
   }
 }
 
+async function validateRoom(roomId: number) {
+  const room = await roomRepository.findById(roomId);
+  if (!room) throw notFoundError();
+
+  const booking = await bookingRepository.findBookingById(roomId);
+  if (room.capacity <= booking.length) throw cannotBookError();
+}
+
 async function getBooking(userId: number) {
   await validateUserBooking(userId);
 
-  const booking = await bookingRepository.findBooking();
+  const booking = await bookingRepository.findBookingById(userId);
   if (booking.length === 0) throw notFoundError();
 
   return booking;
 }
 
+async function createBooking(userId: number, roomId: number) {
+  await validateUserBooking(userId);
+  await validateRoom(roomId);
+
+  return bookingRepository.createBooking({ userId, roomId });
+}
+
 export const bookingService = {
   getBooking,
+  createBooking
 };
