@@ -42,7 +42,22 @@ async function createBooking(userId: number, roomId: number) {
   return bookingRepository.createBooking({ userId, roomId });
 }
 
+async function changeBooking(userId: number, roomId: number) {
+  await validateUserBooking(userId);
+  if (!roomId) throw notFoundError();
+
+  const booking = await bookingRepository.findBooking(userId);
+  if (!booking || booking.userId !== userId) throw cannotBookError();
+
+  return bookingRepository.upsertBooking({
+    id: booking.id,
+    roomId,
+    userId,
+  });
+}
+
 export const bookingService = {
   getBooking,
-  createBooking
+  createBooking,
+  changeBooking
 };
