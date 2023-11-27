@@ -5,9 +5,12 @@ import httpStatus from 'http-status';
 
 export async function getBooking(req: AuthenticatedRequest, res: Response) {
   const { userId } = req;
-
   const booking = await bookingService.getBooking(userId);
-  res.status(httpStatus.OK).send(booking);
+
+  return res.status(httpStatus.OK).send({
+    id: booking.id,
+    Room: booking.Room,
+  });
 }
 
 export async function createBooking(req: AuthenticatedRequest, res: Response) {
@@ -18,6 +21,7 @@ export async function createBooking(req: AuthenticatedRequest, res: Response) {
 
   return res.status(httpStatus.OK).send({ bookingId: booking.id });
 }
+
 
 export async function changeBooking(req: AuthenticatedRequest, res: Response) {
   const { userId } = req;

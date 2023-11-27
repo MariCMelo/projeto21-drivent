@@ -7,7 +7,7 @@ async function findBooking(userId: number) {
   });
 }
 
-async function findBookingById(roomId: number) {
+async function findRoom(roomId: number) {
   return prisma.booking.findMany({
     where: { roomId },
     include: { Room: true },
@@ -17,12 +17,11 @@ async function findBookingById(roomId: number) {
 async function createBooking({ userId, roomId }: any) {
   return prisma.booking.create({
     data: {
-      userId,
       roomId,
+      userId,
     },
   });
 }
-
 async function upsertBooking({ id, roomId, userId }: any) {
   return prisma.booking.upsert({
     where: { id },
@@ -32,7 +31,7 @@ async function upsertBooking({ id, roomId, userId }: any) {
 }
 export const bookingRepository = {
   findBooking,
-  findBookingById,
+  findRoom,
   createBooking,
-  upsertBooking
+  upsertBooking,
 };

@@ -3,6 +3,6 @@ import { ApplicationError } from '@/protocols';
 export function cannotBookError(): ApplicationError {
   return {
     name: 'CannotBookError',
-    message: 'Cannot book the room!',
+    message: 'Cannot book room',
   };
 }

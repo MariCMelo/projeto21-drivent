@@ -6,7 +6,7 @@ import { TicketStatus } from '@prisma/client';
 
 async function validateUserBooking(userId: number) {
   const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
-  if (!enrollment) throw notFoundError();
+  if (!enrollment) throw cannotBookError();
 
   const ticket = await ticketsRepository.findTicketByEnrollmentId(enrollment.id);
   if (!ticket) throw notFoundError();
@@ -18,33 +18,39 @@ async function validateUserBooking(userId: number) {
   }
 }
 
-async function validateRoom(roomId: number) {
+async function checkValidBooking(roomId: number) {
   const room = await roomRepository.findById(roomId);
   if (!room) throw notFoundError();
 
-  const booking = await bookingRepository.findBookingById(roomId);
-  if (room.capacity <= booking.length) throw cannotBookError();
+  const bookings = await bookingRepository.findRoom(roomId);
+  if (room.capacity <= bookings.length) throw cannotBookError();
 }
 
-async function getBooking(userId: number) {
-  await validateUserBooking(userId);
 
-  const booking = await bookingRepository.findBookingById(userId);
-  if (booking.length === 0) throw notFoundError();
+async function getBooking(userId: number) {
+  const booking = await bookingRepository.findBooking(userId);
+  if (!booking) throw notFoundError();
 
   return booking;
 }
 
+
 async function createBooking(userId: number, roomId: number) {
   await validateUserBooking(userId);
-  await validateRoom(roomId);
+  await checkValidBooking(roomId);
 
   return bookingRepository.createBooking({ userId, roomId });
 }
 
+
+
+
+
+
 async function changeBooking(userId: number, roomId: number) {
-  await validateUserBooking(userId);
   if (!roomId) throw notFoundError();
+
+  await checkValidBooking(roomId);
 
   const booking = await bookingRepository.findBooking(userId);
   if (!booking || booking.userId !== userId) throw cannotBookError();
@@ -59,5 +65,5 @@ async function changeBooking(userId: number, roomId: number) {
 export const bookingService = {
   getBooking,
   createBooking,
-  changeBooking
+  changeBooking,
 };
